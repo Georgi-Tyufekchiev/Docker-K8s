@@ -1,0 +1,42 @@
+services:
+  web:
+    build: nginx
+    restart: always
+    ports:
+     - 80:80
+    depends_on:
+      - backend
+    networks:
+      - frontnet
+
+  backend:
+    build:
+      context: src
+    restart: always
+    networks:
+      - frontnet
+      - backnet
+    depends_on:
+      - db
+  
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    secrets:
+      - db-password
+    volumes:
+      - ./mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - backnet
+
+secrets:
+  db-password:
+    file: db/password.txt
+
+networks:
+  backnet:
+  frontnet:
