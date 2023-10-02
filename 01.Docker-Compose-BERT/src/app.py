@@ -4,8 +4,10 @@ from pymongo import MongoClient
 
 app = flask.Flask(__name__, template_folder='templates')
 
-mongo_client = MongoClient("db",27017,username="admin",password="password",authSource="admin",authMechanism="SCRAM-SHA-256")  
-db = mongo_client["admin"] 
+mongo_client = MongoClient("db",27017)  
+db = mongo_client.flask_db
+classification = db.classify
+
 try:
     mongo_client.admin.command('ismaster')
     print("Connected to MongoDB")
@@ -20,7 +22,9 @@ def main():
     if flask.request.method == 'POST':
         text = flask.request.form['text']
         result = predict(text)
-        return flask.render_template('index.html', result=result)
+        classification.insert_one({'text':text,"sentiment":result})
+        all_sentiments = classification.find()
+        return flask.render_template('index.html', result=all_sentiments)
 
 
 if __name__ == '__main__':

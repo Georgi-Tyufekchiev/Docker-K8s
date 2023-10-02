@@ -14,9 +14,11 @@
         <input type="text" id="text" name="text" required>
         <button type="submit">Submit</button>
     </form>
-    <div>
-        <p><strong>Classification Result:</strong></p>
-        <p>{{ result }}</p>
-    </div>
+    <hr>
+    {% for sentiment in result %}
+        <div class="classify">
+            <p>{{ result['text'] }} <i>({{ result['sentiment']}})</i></p>
+        </div>
+    {% endfor %}
 </body>
 </html>

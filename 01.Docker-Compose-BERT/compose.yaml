@@ -23,15 +23,13 @@ services:
     image: mongo:latest
     ports:
       - 27017:27017
-    secrets:
-      - db-password
     volumes:
-      - ./mongodb_data:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      - mongodb_data:/data/db
     networks:
       - backnet
+  
+volumes:
+  mongodb_data:
 
 secrets:
   db-password:
