@@ -8,7 +8,7 @@ class SentimentClassifier(nn.Module):
     
     def __init__(self, n_classes, weight_decay=0.0001):
         super(SentimentClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained(MODEL_NAME, return_dict=False)
+        self.bert = BertModel.from_pretrained("bert-base-cased", return_dict=False)
         self.bn = nn.BatchNorm1d(self.bert.config.hidden_size)
         self.drop_bert = nn.Dropout(p=0.3)
         self.out = nn.Linear(self.bert.config.hidden_size, n_classes)
