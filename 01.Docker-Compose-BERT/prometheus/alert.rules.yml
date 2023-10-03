@@ -1,0 +1,22 @@
+groups:
+  - name: alerts
+    rules:
+      - alert: HighErrorRate
+        expr: job:flaskapp:error_rate > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: High error rate detected
+          description: '{{ $labels.instance }} has a high error rate ({{ $value }})'
+
+      - alert: ServerDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Server is down
+          description: '{{ $labels.instance }} is unreachable'
+
+

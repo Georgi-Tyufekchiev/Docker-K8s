@@ -28,8 +28,62 @@ services:
     networks:
       - backnet
   
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - 9090:9090
+    networks:
+      - backnet
+      - frontnet
+  
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - 9100:9100
+    networks:
+      - backnet
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=http://my.grafana.server/
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    ports:
+      - 3000:3000
+    networks:
+      - backnet
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_storage:/var/lib/grafana
+  
+  mongodb-exporter:
+    image: bitnami/mongodb-exporter
+    ports:
+      - 9216:9216
+    environment:
+      - MOGNODB_URI=mongodb://127.0.0.1:27017
+    networks:
+      - backnet
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter
+    ports:
+      - 9113:9113
+    command: 
+      - "-nginx.scrape-uri=http://web:80/stub_status"
+    networks:
+      - frontnet
+
+  
 volumes:
   mongodb_data:
+  grafana_storage:
 
 secrets:
   db-password:
