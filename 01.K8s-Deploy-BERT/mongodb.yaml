@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: db
-          image: mongo:latest
+          image: mongo:4.4.6
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -31,7 +31,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: db-service
+  name: db
 spec:
   selector:
     app: db
