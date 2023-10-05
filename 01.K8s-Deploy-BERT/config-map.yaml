@@ -135,3 +135,28 @@ data:
         - source_labels: [__meta_kubernetes_service_name]
           action: replace
           target_label: kubernetes_name
+
+--- 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |-
+    worker_processes auto;
+    error_log /dev/stdout debug;
+    
+    events {
+      worker_connections 1024;
+    }
+    
+    http {
+      server {
+        listen 80;
+        server_name localhost;
+
+        location / {
+          proxy_pass http://backend:8000;
+        }
+      }
+    }
