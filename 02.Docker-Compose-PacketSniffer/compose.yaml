@@ -1,0 +1,42 @@
+services:
+  web:
+    build: apache
+    restart: always
+    ports:
+     - 80:80
+    depends_on:
+      - backend
+    networks:
+      - frontnet
+
+  backend:
+    build:
+      context: src
+    restart: always
+    networks:
+      - frontnet
+      - backnet
+    depends_on:
+      - db
+  
+  db:
+    image: mariadb:latest
+    ports:
+      - 8080:8080
+    environment:
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - backnet
+
+volumes:
+  mariadb_data:
+
+secrets:
+  db-password:
+    file: mariaDB/password.txt
+
+networks:
+  backnet:
+  frontnet:
