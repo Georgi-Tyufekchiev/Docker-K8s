@@ -29,7 +29,6 @@ $ kubectl get all
 ```
 Should produce the following output (since all of them are in the default namespace)
 ```
-$ docker ps
 NAME                                      READY   STATUS    RESTARTS   AGE
 pod/backend-deployment-5f776f9fb9-4jbpf   1/1     Running   0          15s
 pod/db-deployment-854c6449bb-lcb7r        1/1     Running   0          15s
