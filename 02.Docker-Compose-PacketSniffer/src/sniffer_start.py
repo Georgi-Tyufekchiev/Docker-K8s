@@ -8,7 +8,7 @@ import select
 import socket
 import struct
 import sys
-
+import cfg
 
 def compute_checksum(buffer: bytes) -> int:
     """
@@ -103,23 +103,30 @@ def parse_tcp(segment):
     return src_port, dst_port, seq_num, ack_num, flags, window, checksum, header, payload
 
 
-def main():
+def capture_packets():
     """
     Open one raw socket, loop over receiving ethernet frames from it and parse
     them as IPv4 carrying UDP or TCP, accordingly.
     """
     ether_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
     # ether_sock.bind(("eno1", 0))
-    while True:
+    captured_packets = []
+    while not cfg.stop_capture_signal:
         ready_socks, _, _ = select.select([ether_sock], [], [], 5)
         if not ready_socks:
             print("5 seconds passed without seeing link-layer traffic", file=sys.stderr)
         for s in ready_socks:
             frame, _ = s.recvfrom(65535)
-
+            packet = {"Src IP:":"None",
+                      "Dst IP: ":"None",
+                      "Src MAC: ":"None",
+                      "Dst MAC: ":"None"}
             # Ethernet handling
             src_mac, dst_mac, eth_type, eth_header, eth_payload = parse_ethernet(frame)
-            dump_ethernet_to_console(src_mac, dst_mac, eth_type, frame)
+            packet["Src MAC: "] = bytes_to_mac(src_mac)
+            packet["Dst MAC: "] = bytes_to_mac(dst_mac)
+
+            # dump_ethernet_to_console(src_mac, dst_mac, eth_type, frame)
             if eth_type != 0x0800:  # IPv4 Ethertype 
                 print("Frame with ethernet type 0x{:04X} received; skipping further processing\n\n".format(
                     eth_type))
@@ -127,8 +134,12 @@ def main():
 
             # IPv4 handling
             src_addr, dst_addr, protocol, ttl, ip_hdr_checksum, ip_header, segment = parse_ipv4(eth_payload)
+            packet["Src IP:"] = src_addr
+            packet["Dst IP:"] = dst_addr
+            captured_packets.append(packet)
+
             checksum_valid = verify_checksum(ip_header)
-            dump_ipv4_to_console(src_addr, dst_addr, ttl, protocol, ip_hdr_checksum, checksum_valid)
+            # dump_ipv4_to_console(src_addr, dst_addr, ttl, protocol, ip_hdr_checksum, checksum_valid)
 
             transport_layer_checksum_valid = verify_checksum(
                 build_pseudo_header_prefix(src_addr, dst_addr, protocol, len(segment))
@@ -137,23 +148,24 @@ def main():
             if protocol == 17:  # UDP protocol number
                 (udp_src_port, udp_dst_port, udp_length, udp_checksum,
                  udp_data_length, udp_header, udp_payload) = parse_udp(segment)
-                dump_udp_to_console(udp_src_port, udp_dst_port,
-                                    udp_length, udp_data_length,
-                                    udp_checksum, transport_layer_checksum_valid)
-                dump_payload_to_console(udp_payload)
+                # dump_udp_to_console(udp_src_port, udp_dst_port,
+                #                     udp_length, udp_data_length,
+                #                     udp_checksum, transport_layer_checksum_valid)
+                # dump_payload_to_console(udp_payload)
 
             elif protocol == 6:  # TCP protocol number
                 (tcp_src_port, tcp_dst_port, tcp_seq_num, tcp_ack_num, tcp_flags,
                  tcp_window, tcp_checksum, tcp_header, tcp_payload) = parse_tcp(segment)
-                dump_tcp_to_console(tcp_src_port, tcp_dst_port,
-                                    tcp_seq_num, tcp_ack_num,
-                                    tcp_flags, tcp_window,
-                                    tcp_checksum, transport_layer_checksum_valid)
-                dump_payload_to_console(tcp_payload)
+                # dump_tcp_to_console(tcp_src_port, tcp_dst_port,
+                #                     tcp_seq_num, tcp_ack_num,
+                #                     tcp_flags, tcp_window,
+                #                     tcp_checksum, transport_layer_checksum_valid)
+                # dump_payload_to_console(tcp_payload)
 
             else:
                 print("IPv4 datagram with protocol number {} received; skipping further processing\n\n".format(
                     protocol))
+    return captured_packets
 
 
 def dump_ethernet_to_console(src_mac, dst_mac, eth_type, frame):
@@ -256,4 +268,4 @@ def bytes_to_mac(bytesmac):
 
 
 if __name__ == "__main__":
-    main()
+    capture_packets()
