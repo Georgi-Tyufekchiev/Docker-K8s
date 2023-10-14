@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Packet Sniffer</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='results-styling.css') }}">
+  
+</head>
+<body>
+    <h1>Packet Sniffer</h1>
+    {% for packet in packets %}
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Information</th>
+        </tr>
+        {% for field, information in packet.items() %}
+            <tr>
+                <td>{{ field }}</td>
+                <td>{{ information }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+</body>
+</html>

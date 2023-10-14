@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Packet Sniffer</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='index-styling.css') }}">
+
+</head>
+<body>
+    <h1>Packet Sniffer</h1>
+    <div class="container">
+        <form action="/start_sniffing" method="post">
+            <button class="btn" type="submit">Start Sniffing</button>
+        </form>
+        <form action="/stop_sniffing" method="post">
+            <button class="btn" type="submit">Stop Sniffing</button>
+        </form>
+        <form action="/view_results">
+            <button class="btn" type="submit">View Results</button>
+        </form>
+    </div>
+</body>
+</html>
