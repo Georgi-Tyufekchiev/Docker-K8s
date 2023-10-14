@@ -134,8 +134,10 @@ def capture_packets():
 
             # IPv4 handling
             src_addr, dst_addr, protocol, ttl, ip_hdr_checksum, ip_header, segment = parse_ipv4(eth_payload)
+            if src_addr.is_loopback:
+                continue
             packet["Src IP:"] = src_addr
-            packet["Dst IP:"] = dst_addr
+            packet["Dst IP: "] = dst_addr
             captured_packets.append(packet)
 
             checksum_valid = verify_checksum(ip_header)
