@@ -8,22 +8,31 @@ services:
       - backend
     networks:
       - frontnet
+    container_name: web-apache
 
   backend:
     build:
       context: src
     restart: always
+    secrets:
+      - db-password
     networks:
       - frontnet
       - backnet
     depends_on:
       - db
+    container_name: backend-flask
   
   db:
     image: mariadb:latest
     ports:
-      - 8080:8080
+      - 3306:3306
+    secrets:
+      - db-password
     environment:
+      - MARIADB_DATABASE=results
+      - MARIADB_USER=admin
+      - MARIADB_PASSWORD=admin
       - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/db-password
     volumes:
       - mariadb_data:/var/lib/mysql
