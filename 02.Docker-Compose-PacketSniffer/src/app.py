@@ -4,24 +4,23 @@ import cfg
 import mysql.connector 
 
 class DBManager:
-    def __init__(self, database='results', host="db", user="root", password_file=None):
-        pf = open(password_file, 'r')
+    def __init__(self, database='results', host="db", user="admin", password=None):
         self.connection = mysql.connector.connect(
             user=user, 
-            password=pf.read(),
+            password="admin",
             host=host, # name of the mysql service as set in the docker compose file
             database=database,
             auth_plugin='mysql_native_password'
         )
-        pf.close()
         self.cursor = self.connection.cursor()
     
     def populate_db(self,data):
         self.cursor.execute('DROP TABLE IF EXISTS results')
         self.cursor.execute('CREATE TABLE results (srcIP VARCHAR(20), dstIP VARCHAR(20), srcMAC VARCHAR(20), dstMAC VARCHAR(20))')
         sql = "INSERT INTO results (srcIP, dstIP, srcMAC, dstMAC) VALUES (%s, %s, %s, %s)"
-        self.cursor.execute(sql, (data['srcIP'], data['dstIP'], data['srcMAC'], data["dstMAC"]))
-        self.connection.commit()
+        for packet in data:
+            self.cursor.execute(sql, (str(packet['Src IP:']), str(packet['Dst IP:']), str(packet['Src MAC:']), str(packet["Dst MAC:"])))
+            self.connection.commit()
     
     def query_results(self):
         self.cursor.execute('SELECT * FROM results')
@@ -63,9 +62,15 @@ def clear_packets_route():
 
 @app.route('/insert_data', methods=["POST"])
 def insert_data():
-    conn = DBManager("/run/secrets/db-password")
+    conn = DBManager(password="admin")
     conn.populate_db(captured_packets)
-    conn.close_conn()
+    # conn.close_conn()
+    rec = conn.query_results()
+
+    response = ''
+    for c in rec:
+        response = response  + '<div>   Res:  ' + c + '</div>'
+    return response
     
 
 if __name__ == '__main__':

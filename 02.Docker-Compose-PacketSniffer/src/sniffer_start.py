@@ -118,13 +118,13 @@ def capture_packets():
         for s in ready_socks:
             frame, _ = s.recvfrom(65535)
             packet = {"Src IP:":"None",
-                      "Dst IP: ":"None",
-                      "Src MAC: ":"None",
-                      "Dst MAC: ":"None"}
+                      "Dst IP:":"None",
+                      "Src MAC:":"None",
+                      "Dst MAC:":"None"}
             # Ethernet handling
             src_mac, dst_mac, eth_type, eth_header, eth_payload = parse_ethernet(frame)
-            packet["Src MAC: "] = bytes_to_mac(src_mac)
-            packet["Dst MAC: "] = bytes_to_mac(dst_mac)
+            packet["Src MAC:"] = bytes_to_mac(src_mac)
+            packet["Dst MAC:"] = bytes_to_mac(dst_mac)
 
             # dump_ethernet_to_console(src_mac, dst_mac, eth_type, frame)
             if eth_type != 0x0800:  # IPv4 Ethertype 
@@ -137,7 +137,7 @@ def capture_packets():
             if src_addr.is_loopback:
                 continue
             packet["Src IP:"] = src_addr
-            packet["Dst IP: "] = dst_addr
+            packet["Dst IP:"] = dst_addr
             captured_packets.append(packet)
 
             checksum_valid = verify_checksum(ip_header)
