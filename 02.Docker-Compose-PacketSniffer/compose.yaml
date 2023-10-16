@@ -38,9 +38,46 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - backnet
+  
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - 9090:9090
+    networks:
+      - frontnet
+      - backnet
+  
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=http://my.grafana.server/
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    ports:
+      - 3000:3000
+    networks:
+      - backnet
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_storage:/var/lib/grafana
+  
+  apache-exporter:
+    image: bitnami/apache-exporter
+    ports:
+      - 9117:9117
+    networks:
+      - frontnet
+    command: 
+      - "--scrape_uri=http://localhost:80/server-status?auto"
 
 volumes:
   mariadb_data:
+  grafana_storage:
 
 secrets:
   db-password:
